@@ -147,21 +147,14 @@ def DPLL (clauses, true_variables):
     elif [] in next_clauses:
         return False
     
-    #if exists_pure_literal(clauses) > 0:
-        
-
-
-    #
-    
-
-
-
     l = next_clauses[0][0] # pozitivna vrednost int
     print("literal to check")
     print(new_true_variables)
     print(l)
-    #literals_to_check.remove(l)
 
+    pure_literal_res = exists_pure_literal(clauses) 
+    if  pure_literal_res > 0:
+        l = pure_literal_res
 
     #case 1 recimo, da l je resničen
     # če je l resničen, so zadovoljivi vsi clausi, ki vsebujejo l
