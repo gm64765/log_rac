@@ -78,6 +78,7 @@ def exists_pure_literal(clauses):
             return i
         else:
             pass
+    return 0
 
 
 def exists_unit_clause(clauses):
@@ -139,17 +140,20 @@ def DPLL (clauses, true_variables):
 
     #
     # Pure literal elemination
-    
-    #while exists_pure_literal(clauses):
-            
-    #
-    
     if len(next_clauses) == 0:
         DPLL_final_result = new_true_variables
         print("hura")
         return True
     elif [] in next_clauses:
         return False
+    
+    #if exists_pure_literal(clauses) > 0:
+        
+
+
+    #
+    
+
 
 
     l = next_clauses[0][0] # pozitivna vrednost int
