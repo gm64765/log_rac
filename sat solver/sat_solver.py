@@ -21,6 +21,21 @@ Example: (x1 v x2) & (x2 v x3) & (x2 v x4)
 
 """
 
+def max_index(clauses):
+    maximum = 0
+    for c in clauses:
+        for literal in c:
+            if literal < 0:
+                if -literal > maximum:
+                    maximum = -literal
+                else:
+                    pass
+            if literal > maximum:
+                maximum = literal
+            else:
+                pass
+    return maximum
+
 def unit_propagate(literal, clauses):
     simplified_clauses = []
 
@@ -42,6 +57,30 @@ def unit_propagate(literal, clauses):
             simplified_clauses.append(c_new)
 
     return simplified_clauses
+
+def exists_pure_literal(clauses):
+
+    list_of_pure_literals = []
+    maximum = max_index(clauses)
+    positive_literals = maximum * [0]
+    negative_literals = maximum * [0]
+
+    for c in clauses:
+        for literal in c:
+            if literal < 0:
+                negative_literals[-literal-1] += 1
+            if literal > 0:
+                positive_literals[literal - 1] += 1
+
+    for i in range(1, maximum + 1):
+        if positive_literals[i - 1] == 0 and negative_literals[i-1] > 0:
+            list_of_pure_literals.append(i)
+        elif negative_literals[i-1] == 0 and positive_literals[i-1] > 0:
+            list_of_pure_literals.append(i)
+    
+    return list_of_pure_literals
+
+
 
 def exists_unit_clause(clauses):
     #
@@ -102,8 +141,8 @@ def DPLL (clauses, true_variables, literals_to_check):
     #
     # Pure literal elemination
     
-    #while exists_pure_literal(clauses):
-        #Heuristics    
+    while exists_pure_literal(clauses):
+            
     #
     
     print("len", len(literals_to_check))
