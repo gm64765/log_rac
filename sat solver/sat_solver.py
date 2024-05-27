@@ -140,7 +140,7 @@ def DPLL (clauses, true_variables):
     #
     # Pure literal elemination
     
-    while exists_pure_literal(clauses):
+    #while exists_pure_literal(clauses):
             
     #
     
