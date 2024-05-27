@@ -64,30 +64,30 @@ def return_unit_clause_literal(clauses):
 global DPLL_final_result 
 DPLL_final_result = []
 
-def DPLL (clauses, true_variables, literals_to_check):
+def DPLL (clauses, true_variables):
     """
     Parameters:
 
     Returns:
     
     """
-    print("checking")
-    print(literals_to_check)
+    print("literals_sto_check")
     print(clauses)
     print("true variables")
     print(true_variables)
     
-    if len(literals_to_check) == 0:
-        if len(clauses) == 0:
-            global DPLL_final_result 
-            DPLL_final_result = true_variables
-            print("hura")
-            return True
-        elif [] in clauses:
-            return False
+    global DPLL_final_result 
+    if len(clauses) == 0:
+        
+        DPLL_final_result = true_variables
+        print("hura")
+        return True
+    
+    elif [] in clauses:
+        return False
     
     next_clauses = clauses
-    new_true_variables = []
+    new_true_variables = true_variables
     #
     # Unit propagation
 
@@ -96,8 +96,9 @@ def DPLL (clauses, true_variables, literals_to_check):
         literal = return_unit_clause_literal(next_clauses)
         # simplify clauses and keep only those that do not include literal or they contain literal negation  
         next_clauses = unit_propagate(literal, next_clauses)
-        if literal not in new_true_variables:
-            new_true_variables.append(literal)
+
+        #if literal not in new_true_variables:
+        new_true_variables.append(literal)
 
     #
     # Pure literal elemination
@@ -106,25 +107,36 @@ def DPLL (clauses, true_variables, literals_to_check):
         #Heuristics    
     #
     
-    print("len", len(literals_to_check))
-    l = literals_to_check[0] # pozitivna vrednost int
-    literals_to_check.remove(l)
+    if len(next_clauses) == 0:
+        DPLL_final_result = new_true_variables
+        print("hura")
+        return True
+    elif [] in next_clauses:
+        return False
+
+
+    l = next_clauses[0][0] # pozitivna vrednost int
+    print("literal to check")
+    print(new_true_variables)
+    print(l)
+    #literals_to_check.remove(l)
+
 
     #case 1 recimo, da l je resničen
     # če je l resničen, so zadovoljivi vsi clausi, ki vsebujejo l
     # clausi z -l so zadovoljivi, če je preostanek clausa zadovoljiv: False v C == True iff C == True 
     next_clauses_case1 = copy.deepcopy(next_clauses)
-    true_variables_case1 = copy.deepcopy(true_variables)
-    true_variables_case1 = true_variables_case1 + new_true_variables
+    true_variables_case1 = copy.deepcopy(new_true_variables)
+    #true_variables_case1 = true_variables_case1 + new_true_variables
     true_variables_case1.append(l)
     
     #case 2 recimo, da l ni resničen
     # če je -l resničen, so zadovoljivi vsi clausi, ki vsebujejo -l
     # clausi z l so zadovoljivi, če je preostanek clausa zadovoljiv: False v C == True iff C == True 
     next_clauses_case2 = copy.deepcopy(next_clauses)
-    true_variables_case2 = copy.deepcopy(true_variables)
-    true_variables_case2 = true_variables_case2 + new_true_variables
-    true_variables_case1.append((-1 * l))
+    true_variables_case2 = copy.deepcopy(new_true_variables)
+    #true_variables_case2 = true_variables_case2 + new_true_variables
+    true_variables_case2.append((-1 * l))
     
 
     for c in next_clauses:
@@ -161,7 +173,7 @@ def DPLL (clauses, true_variables, literals_to_check):
 
         # c ne vsebuje l, dodamo c v oba lista
 
-    return DPLL (next_clauses_case1, true_variables_case1, literals_to_check) or DPLL (next_clauses_case2, true_variables_case2, literals_to_check)
+    return DPLL (next_clauses_case1, true_variables_case1) or DPLL (next_clauses_case2, true_variables_case2)
 
 if __name__=="__main__":
     t_start = time.time()
@@ -194,8 +206,8 @@ if __name__=="__main__":
     all_clauses= sorted(all_clauses, key=len)
     #print(all_clauses)
 
-    literals_to_check = [i for i in range(1, num_vars + 1)]
-    sol = DPLL(all_clauses, [], literals_to_check)
+    #literals_to_check = [i for i in range(1, num_vars + 1)]
+    sol = DPLL(all_clauses, [])
     print(sol)
     print("solution:")
     print(DPLL_final_result)
