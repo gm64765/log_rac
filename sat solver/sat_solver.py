@@ -220,8 +220,9 @@ if __name__=="__main__":
 
     all_clauses = []
 
-    with open('input_output/my_example.txt', 'r') as file:
-    #with open('input_output/sudoku_easy.txt', 'r') as file:
+
+    #with open('input_output/my_example.txt', 'r') as file:
+    with open('/input_output/sudoku_easy.txt', 'r') as file:
 
         for line in file:
             symbols = line.strip().split()
@@ -236,6 +237,8 @@ if __name__=="__main__":
                 integer_list = integer_list[:-1] # we drop last 0
                 #print(integer_list)
                 all_clauses.append(integer_list)
+    
+
 
     all_clauses= sorted(all_clauses, key=len)
     #print(all_clauses)
@@ -245,6 +248,18 @@ if __name__=="__main__":
     print(sol)
     print("solution:")
     print(DPLL_final_result)
+
+    with open('sudoku_mini_solution.txt', 'r') as file:
+    
+        line = file
+        symbols = line.strip().split()
+        for i in range (0, len(symbols)):
+            if symbols [i] == sol[i]:
+                pass
+            else:
+                print('narobe')
+        
+        print('deluje')
 
     t_end = time.time() - t_start
     print(t_end)
