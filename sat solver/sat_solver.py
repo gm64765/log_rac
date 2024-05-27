@@ -60,7 +60,6 @@ def unit_propagate(literal, clauses):
 
 def exists_pure_literal(clauses):
 
-    list_of_pure_literals = []
     maximum = max_index(clauses)
     positive_literals = maximum * [0]
     negative_literals = maximum * [0]
@@ -74,11 +73,11 @@ def exists_pure_literal(clauses):
 
     for i in range(1, maximum + 1):
         if positive_literals[i - 1] == 0 and negative_literals[i-1] > 0:
-            list_of_pure_literals.append(i)
-            return list_of_pure_literals
+            return i
         elif negative_literals[i-1] == 0 and positive_literals[i-1] > 0:
-            list_of_pure_literals.append(i)
-            return list_of_pure_literals
+            return i
+        else:
+            pass
 
 
 def exists_unit_clause(clauses):
