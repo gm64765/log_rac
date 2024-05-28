@@ -47,6 +47,9 @@ def unit_propagate(literal, clauses):
             #
             c_new = copy.deepcopy(c)
             c_new.remove(literal * (-1))
+            while (literal * (-1)) in c_new:
+                c_new.remove((literal * (-1)))
+            
             simplified_clauses.append(c_new)
 
         elif literal not in c:
@@ -71,15 +74,18 @@ def exists_pure_literal(clauses):
             if literal > 0:
                 positive_literals[literal - 1] += 1
 
+    max_literal = 0
     for i in range(1, maximum + 1):
         if positive_literals[i - 1] == 0 and negative_literals[i-1] > 0:
-            return i
+            if max_literal < negative_literals[i-1]:
+                max_literal = i
         elif negative_literals[i-1] == 0 and positive_literals[i-1] > 0:
-            return i
+            if max_literal < positive_literals[i-1]:
+                max_literal = i
         else:
             pass
-    return 0
 
+    return max_literal
 
 def exists_unit_clause(clauses):
     #
@@ -104,21 +110,28 @@ DPLL_final_result = []
 
 def DPLL (clauses, true_variables):
     """
+    Recursive function that implements DPLL algorithm for solving SAT expression.
+
     Parameters:
+    clauses (list of lists) - It corresponds to list of all SAT clauses that need to be investigated. 
+        Each clause is represented as a list of literals (positive or negative integer values).
+    true_variables (list of Int) - It corresponds to a list that tells us which literals were assumed to be true
+        at the beginning of the current iteration (based on previous recursive calls this list grows iteratively).
 
     Returns:
+        True: if SAT expression represened by clauses is satisfiable. A concrete solution is saved
+          to global "DPLL_final_result" variable (if a literal is not listed there, it is assumed 
+          it can be either True or False).
+        False: if SAT expression is not satisfiable.
     
     """
-    print("literals_sto_check")
-    print(clauses)
-    print("true variables")
-    print(true_variables)
-    
+    #
+    #   Step 0: Check the stopping condition.
+    #
     global DPLL_final_result 
     if len(clauses) == 0:
         
         DPLL_final_result = true_variables
-        print("hura")
         return True
     
     elif [] in clauses:
@@ -126,88 +139,130 @@ def DPLL (clauses, true_variables):
     
     next_clauses = clauses
     new_true_variables = true_variables
+    
     #
-    # Unit propagation
-
+    # Step 1: Unit propagation.
+    #
     while exists_unit_clause(next_clauses):
         # return a unit clause literal
         literal = return_unit_clause_literal(next_clauses)
         # simplify clauses and keep only those that do not include literal or they contain literal negation  
         next_clauses = unit_propagate(literal, next_clauses)
-
-        #if literal not in new_true_variables:
-        new_true_variables.append(literal)
+        #print("in while")
+        if literal not in new_true_variables:
+            new_true_variables.append(literal)
 
     #
-    # Pure literal elemination
+    #   Step 1B: Check the stopping condition again.
+    #
     if len(next_clauses) == 0:
         DPLL_final_result = new_true_variables
-        print("hura")
         return True
     elif [] in next_clauses:
         return False
     
-    l = next_clauses[0][0] # pozitivna vrednost int
-    print("literal to check")
-    print(new_true_variables)
-    print(l)
-
-    pure_literal_res = exists_pure_literal(clauses) 
+    #
+    # Step 3: Pure literal elemination and selecting the next literal.
+    #
+    l = next_clauses[0][0]
+    pure_literal_res = exists_pure_literal(next_clauses) 
     if  pure_literal_res > 0:
         l = pure_literal_res
 
-    #case 1 recimo, da l je resničen
-    # če je l resničen, so zadovoljivi vsi clausi, ki vsebujejo l
-    # clausi z -l so zadovoljivi, če je preostanek clausa zadovoljiv: False v C == True iff C == True 
-    next_clauses_case1 = copy.deepcopy(next_clauses)
+    #Case 1: assume that l is True
+    #   if l is True - all clauses containing l are True 
+    #   clauses containing -l are satisfiable if the rest is satisfiable: False v C == True iff C == True 
+    next_clauses_case1 = []
     true_variables_case1 = copy.deepcopy(new_true_variables)
-    #true_variables_case1 = true_variables_case1 + new_true_variables
-    true_variables_case1.append(l)
+    true_variables_case1.append(l) # We assume that l is True.
     
-    #case 2 recimo, da l ni resničen
-    # če je -l resničen, so zadovoljivi vsi clausi, ki vsebujejo -l
-    # clausi z l so zadovoljivi, če je preostanek clausa zadovoljiv: False v C == True iff C == True 
-    next_clauses_case2 = copy.deepcopy(next_clauses)
+    #Case 2: assume that l is False:
+    #   if -l is True all clauses containing -l are True
+    #   clauses containing l are satisfiable if the rest is satisfiable: False v C == True iff C == True 
+    next_clauses_case2 = []
     true_variables_case2 = copy.deepcopy(new_true_variables)
-    #true_variables_case2 = true_variables_case2 + new_true_variables
-    true_variables_case2.append((-1 * l))
+    true_variables_case2.append((-1 * l)) # We assume that -l is True.
     
-
     for c in next_clauses:
-        # c vsebuje l
-        if l in c:
-            # če je l resničen (case 1), takega clausa ne dodajamo v next_clauses_case1 
-            #(ker je že cel clause resničen, ne glede na ostale vrednosti)
+
+        if l in c and (-1) * l not in c:
+            # - if l is True (case 1), the whole clause is True - we don't add such clause
+            # to next_clauses_case1, since it is already satisfied. 
             
-            # če je l neresničen (case 2), je treba pogledati preostanek clausa (tega dodamo v next_clauses_case2)
+            # - if l is False <=> -l is True (case 2), we need to take a look at the rest of the clause - we remove l from clause 
+            # and add the rest of the clause to next_clauses_case2.
             
             c_new = copy.deepcopy(c)
-            c_new.remove(l)
-            next_clauses_case2.remove(c)
+            # remove all occurences of l
+            while l in c_new:
+                c_new.remove(l)
             next_clauses_case2.append(c_new)
             
 
-        if (-1) * l in c:
-            # če je -l neresničen (case 2), takega clausa ne dodajamo v next_clauses_case1 
-            #(ker je že cel clause resničen, ne glede na ostale vrednosti)
-            
-            # če je -l resničen (case 1), je treba pogledati preostanek clausa (tega dodamo v next_clauses_case2)
+        if (-1) * l in c and l not in c:
+            # - if -l is False <=> l is True (case 2) we don't add such clause to next_clauses_case1 
+            # (because it is already satisfied)
+            # - if -l is True <=> l is False (case 1) we need o take a lookt at the rest of the clause -
+            # the rest of the clause is added to (next_clauses_case2)
 
             c_new = copy.deepcopy(c)
-            c_new.remove((-1) * l)
-            next_clauses_case1.remove(c)
+            
+            # remove all occurences of l
+            while ((-1) * l) in c_new:
+                c_new.remove(((-1) * l))
             next_clauses_case1.append(c_new)
 
+        if l not in c and (-1) * l not in c:
+            #
+            # - if neither l nor -l are present in a clause, we need to take a look at the whole clause 
+            # in both cases.
+            #
 
-        if l not in c or (-1) * l not in c:
             c_new = copy.deepcopy(c)
             next_clauses_case1.append(c_new)
             next_clauses_case2.append(c_new)
-        # c vsebuje -l
 
-        # c ne vsebuje l, dodamo c v oba lista
-
+    #
+    # Check if SAT expression is satisfiable in any of the 2 cases (if the chosen literal is True and if it is False)
+    #
     return DPLL (next_clauses_case1, true_variables_case1) or DPLL (next_clauses_case2, true_variables_case2)
+
+
+def is_satisfying_solution(cnf, solution):
+    """
+    Check if the given solution satisfies the CNF expression.
+
+    :param cnf: List of lists, where each sublist represents a clause in CNF form.
+    :param solution: List of integers representing the suggested solution.
+    :return: True if the solution satisfies the CNF expression, False otherwise.
+    """
+    # Convert solution to a dictionary for quick lookup
+    solution_dict = {abs(lit): lit > 0 for lit in solution}
+
+    # Check each clause in the CNF
+    for clause in cnf:
+        clause_satisfied = False
+        for literal in clause:
+            var = abs(literal)
+            if var in solution_dict:
+                # Check if the literal's value matches the solution's value
+                if solution_dict[var] == (literal > 0):
+                    clause_satisfied = True
+                    break
+            else:
+                # If the variable is not in the solution, it can be either true or false
+                clause_satisfied = True
+                break
+        
+        # If any clause is not satisfied, the whole CNF is not satisfied
+        if not clause_satisfied:
+            print("Clause not satisfied")
+            print(clause)
+            return False
+
+    return True
+
+
 
 if __name__=="__main__":
     t_start = time.time()
@@ -220,9 +275,13 @@ if __name__=="__main__":
 
     all_clauses = []
 
-
-    #with open('input_output/my_example.txt', 'r') as file:
-    with open('/input_output/sudoku_easy.txt', 'r') as file:
+    file_name = 'input_output/sudoku_easy.txt'
+    file_name2 = 'input_output/sudoku_easy_solution.txt'
+    
+    file_name = "input_output/additional_examples/inputQ25.txt"
+    file_name2 = "input_output/additional_examples/outputQ25.txt"
+    
+    with open(file_name, 'r') as file:
 
         for line in file:
             symbols = line.strip().split()
@@ -241,25 +300,39 @@ if __name__=="__main__":
 
 
     all_clauses= sorted(all_clauses, key=len)
-    #print(all_clauses)
 
-    #literals_to_check = [i for i in range(1, num_vars + 1)]
     sol = DPLL(all_clauses, [])
-    print(sol)
-    print("solution:")
-    print(DPLL_final_result)
 
-    with open('sudoku_mini_solution.txt', 'r') as file:
+    print("solution:")
+    print(sorted(DPLL_final_result))
+    symbols = []
+
+    if sol:
+        with open(file_name2, 'r') as file:
+            line = file.readline()
+            symbols = list(map(int, line.split()))
+            symbols = sorted(symbols)
+            sorted_solution = sorted(DPLL_final_result)
+            """
+            for i in range (0, len(symbols)):
+                if symbols [i] == sorted_solution[i]:
+                    pass
+                else:
+                    print('narobe', symbols[i]," ", sorted_solution[i])
+            """
+            print('deluje')
+    else:
+        with open(file_name2, 'r') as file:
+            line = file.readline()
+            
+        print("ni resitve ", line)
     
-        line = file
-        symbols = line.strip().split()
-        for i in range (0, len(symbols)):
-            if symbols [i] == sol[i]:
-                pass
-            else:
-                print('narobe')
-        
-        print('deluje')
+    result = is_satisfying_solution(all_clauses, DPLL_final_result)
+    print("Does the solution satisfy the CNF expression?", result)
+
+    result = is_satisfying_solution(all_clauses, symbols)
+    print("Does the 2nd solution satisfy the CNF expression?", result)
+
 
     t_end = time.time() - t_start
     print(t_end)
