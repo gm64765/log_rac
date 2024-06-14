@@ -219,3 +219,216 @@ theorem full_to_plane_inverse : ∀ (t : full_binary_tree), plane_tree_to_full_b
   induction t with -- Tried induction, did not finish
   | leaf => rfl -- For base case it is simple
   | node l r ih_l ih_r => sorry
+
+
+
+
+theorem gcd_consecutive (n : ℕ) : Nat.gcd n (n + 1) = 1 := by
+  have h : Nat.gcd n (n + 1) = 1 := by
+    simp [gcd]
+  exact h
+
+--theorem help2 (n : ℕ) : ((2 * n).factorial) / (n.factorial * (2 * n - n).factorial) = ((2 * n).factorial) / (n.factorial * n.factorial) := by
+  --let m := ((2 * n).factorial) / (n.factorial * (2 * n - n).factorial)
+
+  --have h : (2 * n - n) = n := by
+    --rw [two_mul]
+    --exact Nat.add_sub_cancel n n
+  --rw [h]
+
+theorem omg (n : ℕ) : n ≤ 2 * n := by
+    rw [two_mul]
+    exact Nat.le_add_left n n
+
+--theorem see : ∀(n : ℕ) (h : n > 0), 2 * n - (n + 1) = n - 1 := by
+  --intro n
+  --rw [← add_left_inj]
+  --rw [Nat.sub_add_cancel]
+  --nth_rw 1 [← Nat.add_assoc]
+  --rw [two_mul]
+  --rw [← Nat.pred_eq_sub_one]
+  --rw [Nat.add_assoc]
+  --rw [Nat.add_one]
+  --rw [Nat.add_succ]
+  --rw [Nat.add_comm (Nat.pred n) n]
+  --rw [← Nat.add_succ]
+  --rw [Nat.succ_pred]
+  --simp
+  --exact h
+
+--theorem prosim (n : ℕ) : (2 * n - (n + 1)).factorial = (2 * n - n).factorial / n := by
+
+
+--theorem omg2 (n : ℕ) : n + 1 ≤ 2 * n := by
+  --rw [two_mul]
+  --rw [Nat.add_comm n 1]
+  --have h : 2 * n = n + 1 + n - 1 := by
+    --rw [two_mul]
+
+
+--theorem div_by_n_plus_one (n : ℕ) : (n + 1) ∣ (Nat.choose (2 * n) (n)) := by
+
+  --have def_binom : (2 * n).choose n = ((2 * n).factorial) / (n.factorial * n.factorial) := by
+    --rw [Nat.choose_eq_factorial_div_factorial]
+    --rw [help2]
+    --apply omg
+
+  --have help : (2 * n).choose (n + 1) = (2 * n).choose n * (2 * n - n) / (n + 1) := by
+    --rw [Nat.choose_eq_factorial_div_factorial]
+    --rw [Nat.factorial_succ]
+
+--theorem prosim_bog_uslisi_me (n : ℕ) : (2 * n).choose (n + 1) = n * (2 * n).choose n / (n + 1) := by
+--rw [Nat.choose_eq_factorial_div_factorial]
+
+--helper function for 2 (n + 1) - n + 1 = n + 2
+theorem  pomoc1 : ∀ (n : ℕ), 2 * Nat.succ n - Nat.succ n + 1 = Nat.succ n + 1 := by
+  intro n
+  rw [Nat.two_mul]
+  rw [Nat.add_sub_self_left]
+
+--helper function for n = 2 (n + 1) - (n + 2)
+theorem pomoc2 : ∀ (n : ℕ), n = 2 * Nat.succ n - (Nat.succ n + 1) := by
+  intro n
+  rw [Nat.two_mul]
+  nth_rw 2 [← Nat.add_one]
+  nth_rw 1 [← Nat.add_assoc]
+  nth_rw 2 [Nat.add_comm]
+  nth_rw 1 [Nat.add_assoc]
+  rw [Nat.add_sub_self_right (n) (Nat.succ n + 1)]
+
+--helper function for n + 1 = 2 (n + 1) - (n + 1)
+theorem pomoc3 : ∀ (n : ℕ), Nat.succ n = 2 * Nat.succ n - Nat.succ n := by
+  intro n
+  rw [Nat.two_mul]
+  rw [Nat.add_sub_self_right]
+
+--helper function for (n + 1) (2(n + 1) choose (n + 1) + 2(n + 1) choose (n + 1) = (n + 2) (2(n + 1) choose (n + 1))
+theorem pomoc4 : ∀ (n : ℕ), Nat.succ n * Nat.choose (2 * Nat.succ n) (Nat.succ n) + Nat.choose (2 * Nat.succ n) (Nat.succ n) = (Nat.succ n + 1) * Nat.choose (2 * Nat.succ n) (Nat.succ n) := by
+  intro n
+  nth_rw 2 [← Nat.one_mul (Nat.choose (2 * Nat.succ n) (Nat.succ n))]
+  rw [← Nat.right_distrib]
+
+--helper function for (n + 1)! = (2 * (n + 1) - (n + 1))!
+theorem pomoc5 : ∀ (n : ℕ), n + 1 = 2 * (n + 1) - (n + 1) := by
+  intro n
+  rw [← add_left_inj]
+  rw [Nat.sub_add_cancel]
+  nth_rw 1 [← Nat.add_assoc]
+  ring
+  linarith
+
+--helper function for n! = (2 * (n + 1) - (n + 2))!
+theorem pomoc6 : ∀ (n : ℕ), n  = 2 * (n + 1) - (n + 1 + 1) := by
+  intro n
+  rw [← add_left_inj]
+  rw [Nat.sub_add_cancel]
+  nth_rw 1 [← Nat.add_assoc]
+  ring
+  linarith
+
+-- first we rewrite 2n choose n, after rewriting the solution is a consequence
+theorem rewrite_2n (n : ℕ) : Nat.choose (2 * n) n = (n + 1) * (Nat.choose (2 * n) n - Nat.choose (2 * n) (n + 1)) := by
+  cases n with
+  | zero => -- the case where n = 0
+    rw [Nat.choose_zero_right]
+    rw [Nat.zero_add]
+    rw [one_mul]
+    rw [Nat.choose_one_right]
+  | succ n => -- induction step
+  rw [Nat.mul_sub_left_distrib]
+  rw [Nat.right_distrib]
+  rw [Nat.one_mul]
+  nth_rw 3 [Nat.add_comm]
+  apply Eq.symm
+  -- add 2n choose (n+1) to both sides, they cancel out
+  -- using tactic Nat.sub_add_cancel, later prove m ≤ n
+  rw [← add_left_inj]
+  rw [Nat.sub_add_cancel]
+  nth_rw 1 [Nat.add_comm]
+  rw [add_right_inj]
+  nth_rw 3 [Nat.mul_comm]
+  -- multiply both sides of equation by (n+1)! and (n)!
+  -- they have to be positive (obviously)
+  have h : 0 < Nat.factorial (n + 1) * Nat.factorial (n) := by
+    apply Nat.mul_pos
+    exact Nat.factorial_pos (n + 1)
+    exact Nat.factorial_pos n
+  -- multiply
+  apply Nat.eq_of_mul_eq_mul_right h
+  -- use tactic Nat.choose_mul_factorial_mul_factorial to cancel things out
+  nth_rw 4 [Nat.mul_comm]
+  nth_rw 1 [Nat.mul_assoc]
+  nth_rw 2 [← Nat.mul_assoc]
+  nth_rw 2 [← Nat.mul_assoc]
+  nth_rw 3 [Nat.mul_comm]
+  nth_rw 1 [← Nat.mul_assoc]
+  nth_rw 1 [← Nat.mul_assoc]
+
+  rw [← Nat.factorial_succ]
+  nth_rw 1 [Nat.mul_assoc]
+  nth_rw 1 [← Nat.mul_assoc]
+  nth_rw 5 [Nat.succ_eq_add_one]
+  nth_rw 3 [Nat.mul_assoc]
+
+  rw [← Nat.factorial_succ (n + 1)]
+  nth_rw 4 [pomoc5]
+  nth_rw 4 [Nat.add_one]
+  nth_rw 4 [Nat.add_one]
+  rw [pomoc1]
+
+  nth_rw 8 [pomoc2 n]
+
+  nth_rw 4 [Nat.add_comm]
+  nth_rw 5 [Nat.add_comm]
+  rw [Nat.choose_mul_factorial_mul_factorial]
+  rw [Nat.add_one]
+  nth_rw 2 [Nat.mul_comm]
+  nth_rw 4 [pomoc3]
+  rw [Nat.choose_mul_factorial_mul_factorial]
+
+  linarith
+  linarith
+
+  -- proving m ≤ n
+  nth_rw 1 [← Nat.one_mul ((2 * (n + 1)).choose (n + 1))]
+  rw [Nat.one_mul]
+  nth_rw 2 [Nat.add_one]
+  nth_rw 2 [Nat.add_one]
+  rw [pomoc4]
+  apply Nat.mul_le_mul_left
+-- proving inequality
+  have h : (2 * (Nat.succ n)).choose (Nat.succ n + 1) * (Nat.factorial (Nat.succ n + 1) * Nat.factorial (Nat.succ n)) ≤ (2 * (Nat.succ n)).choose (Nat.succ n) *  (Nat.factorial (Nat.succ n + 1) * Nat.factorial (Nat.succ n)) := by
+    -- removing choose from lhs
+    nth_rw 2 [Nat.factorial_succ]
+    nth_rw 1 [← Nat.mul_assoc]
+    nth_rw 4 [Nat.mul_comm]
+    nth_rw 1 [← Nat.mul_assoc]
+    nth_rw 4 [pomoc6 n]
+    rw [Nat.choose_mul_factorial_mul_factorial]
+    -- removing choose from rhs
+    nth_rw 1 [Nat.factorial_succ]
+    nth_rw 6 [Nat.mul_comm]
+    nth_rw 1 [Nat.mul_assoc]
+    nth_rw 6 [Nat.mul_comm]
+    nth_rw 2 [← Nat.mul_assoc]
+    nth_rw 1 [← Nat.mul_assoc]
+    nth_rw 1 [← Nat.mul_assoc]
+    rw [Nat.add_one]
+    nth_rw 6 [pomoc3]
+    rw [Nat.choose_mul_factorial_mul_factorial]
+
+    linarith
+    linarith
+    linarith
+--this is it, just tell lean factorials are positive
+  nth_rw 1 [Nat.add_comm]
+  apply le_of_mul_le_mul_right h
+  apply Nat.mul_pos
+  exact Nat.factorial_pos (n + 1 + 1)
+  exact Nat.factorial_pos (n + 1)
+
+
+-- applying the theorem
+theorem divisibility_by_n_plus_one (n : ℕ) : (n + 1) ∣ Nat.choose (2 * n) n := by
+  rw [rewrite_2n]
+  apply dvd_mul_right
