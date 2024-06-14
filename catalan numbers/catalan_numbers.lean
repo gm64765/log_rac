@@ -1,24 +1,35 @@
---import Init.Control.Basic
---import Init.Data.Nat.Basic --  tocno ta
 import Init
 import Mathlib
 import Mathlib.Data.Nat.Defs
 import Mathlib.Algebra.Group.Basic
-
---import Mathlib.Data.Nat.GCD.Basic
---import Mathlib.Algebra.BigOperators.Basic
---import Mathlib.Data.Finset.Basic
---import MIL.Common
---import Mathlib.Data.Fintype.Basic --od tod dol
---import Mathlib.Data.Real.Basic
---import Mathlib.Data.Nat.Defs
-
-
-variable {α : Type*} (s : Finset ℕ) (f : ℕ → ℕ) (n : ℕ)
+import Mathlib.Logic.Equiv.Defs
 
 
 open BigOperators
 open Finset
+
+/-
+
+TO RUN THIS FILE it should be located in "mathematics_in_lean" repository
+similarly as when we solved exercises during our classes.
+
+In this file there are solutions for
+ - small tasks 1 - 5
+ - big tasks 4, 5, 6 --> task 5 is partially solved
+-/
+
+/-
+
+*************************************************************************
+*************************************************************************
+
+  SMALL TASKS are to follow
+
+*************************************************************************
+*************************************************************************
+-/
+
+
 
 /-
   =============================================================
@@ -41,31 +52,44 @@ def catalan_number_n : ℕ → ℕ
 #eval catalan_number_n 4
 
 /-
+
   =============================================================
   SMALL TASK 2
   =============================================================
   Formalising a concept of plane trees
+
 -/
 
 inductive plane_tree : Type
 | node : List plane_tree → plane_tree
 
 /-
+
   =============================================================
   SMALL TASK 3
   =============================================================
   Formalising a concept of full binary trees
+
 -/
 
 inductive full_binary_tree : Type
 | leaf : full_binary_tree
 | node : (T₁ T₂ : full_binary_tree) → full_binary_tree
 
+open full_binary_tree
+
+def full_binary_tree_size : full_binary_tree →  ℕ
+| leaf => 1
+| node left right => full_binary_tree_size left + full_binary_tree_size right + 1
+
+
 /-
+
   =============================================================
   SMALL TASK 4
   =============================================================
   Formalising a concept of full binary trees with n nodes
+
 -/
 
 inductive full_binary_tree_n : ℕ → Type
@@ -86,10 +110,12 @@ def height_full_binary_tree {n : ℕ} : full_binary_tree_n n → ℕ
 
 
 /-
+
   =============================================================
   SMALL TASK 5
   =============================================================
   Formalising a concept of ballot sequences of length n (consisting of A and B; there must be more of A votes)
+
 -/
 
 inductive vote
@@ -139,8 +165,21 @@ is_ballot_sequence_check (lst)
 #eval is_ballot_sequence (cons A (cons B (cons A (cons A (cons B nil))))) -- should return true
 #eval is_ballot_sequence (cons A (cons B (cons A (cons B (cons B nil)))))  -- should return false
 
+/-
+
+*************************************************************************
+*************************************************************************
+  LARGER TASKS
+    - task 4 and task 6 are complete
+    - task 5 is incomplete with outlined idea
+
+*************************************************************************
+*************************************************************************
+-/
+
 
 /-
+
   ======================================================================
   LARGER TASK
   =====================================================================
@@ -166,24 +205,22 @@ theorem plane_list_inverse (pt : plane_tree) : list_to_plane_tree (plane_tree_to
 cases pt with
 | node n => simp [plane_tree_to_list, list_to_plane_tree]
 
--- Proof of bijection
-theorem bijection :
-∃ (f : List plane_tree → plane_tree) (g : plane_tree → List plane_tree), (∀ lt, g (f lt) = lt) ∧ (∀ n, f (g n) = n) :=
+-- The upper theorems are used to prove the isomorphism by bijection
+theorem bijection_plane_trees_and_list_plane_trees :
+∃ (f1 : List plane_tree → plane_tree) (f2 : plane_tree → List plane_tree), (∀ lt, f2 (f1 lt) = lt) ∧ (∀ n, f1 (f2 n) = n) :=
 ⟨list_to_plane_tree, plane_tree_to_list, list_to_plane_inverse, plane_list_inverse⟩
-
-
-
 
 open plane_tree
 open full_binary_tree
 
-
 /-
+
   ======================================================================
   LARGER TASK 5
   =====================================================================
  We must prove Isomorphism between plane trees and full binary trees
  The task is unfinished
+
 -/
 
 
@@ -200,6 +237,7 @@ def full_binary_tree_to_plane_tree : full_binary_tree → plane_tree
     match full_binary_tree_to_plane_tree r with
     | plane_tree.node ts => plane_tree.node (full_binary_tree_to_plane_tree l :: ts)
 
+open plane_tree_to_list
 
 -- For both mappings we must show that they are inverses of each other.
 theorem plane_to_full_inverse : ∀ (t : plane_tree), full_binary_tree_to_plane_tree (plane_tree_to_full_binary_tree t) = t := by
@@ -220,12 +258,38 @@ theorem full_to_plane_inverse : ∀ (t : full_binary_tree), plane_tree_to_full_b
   | leaf => rfl -- For base case it is simple
   | node l r ih_l ih_r => sorry
 
+-- We also tried to prove mappings in the following way, however, it was unsuccessful.
+-- After many tries we couldn't manage to show that the recursion will eventually stop (however, this seems to be obviuos), however proving the base case is trivial.
+/- --UNCOMMENT HERE
+-- For both mappings we must show that they are inverses of each other.
+theorem plane_to_full_inverse : ∀ (t : plane_tree), full_binary_tree_to_plane_tree (plane_tree_to_full_binary_tree t) = t := by
+  rintro ⟨⟨ ⟩ | ⟨h, l⟩⟩
+  rfl
+  rw [plane_to_full_inverse]
+  decreasing_by sorry
 
+theorem full_to_plane_inverse (t : full_binary_tree) : plane_tree_to_full_binary_tree (full_binary_tree_to_plane_tree t) = t := by
+  induction t with -- Tried induction, did not finish
+  | leaf => rfl -- For base case it is simple
+  | node l r ih_l ih_r =>
+    simp [full_to_plane_inverse]
+    decreasing_by sorr
+  -- UNCOMMENT HERE
+-/
+
+/-
+
+  ======================================================================
+  LARGER TASK 6
+  =====================================================================
+ Prove that 2n choose n is divisible by n + 1.
+
+-/
 
 
 theorem gcd_consecutive (n : ℕ) : Nat.gcd n (n + 1) = 1 := by
   have h : Nat.gcd n (n + 1) = 1 := by
-    simp [gcd]
+    simp --[gcd]
   exact h
 
 --theorem help2 (n : ℕ) : ((2 * n).factorial) / (n.factorial * (2 * n - n).factorial) = ((2 * n).factorial) / (n.factorial * n.factorial) := by
